@@ -10,9 +10,12 @@ def range_filter(scan, min, max):
     index = []
     for i, ray in enumerate(scan) :
         if ray < min:
-            scan[i] = None
+            scan[i] = float('Inf')
         elif ray > max:
-            scan[i] = None
+            scan[i] = float('Inf')
+        elif np.isnan(ray):
+            scan[i] = min
+            index.append(i)
         else :
             index.append(i)
     return scan, index
@@ -50,15 +53,15 @@ def median_deviation(scan, window):
     return result
 
 def callback(msg):
-        rate = rospy.Rate(15)
+        rate = rospy.Rate(20)
         scan = list(msg.ranges)
         
         # Get a list of rays in specified range and their indexes 
-        range_scan, index = range_filter(scan, min = msg.range_min, max = 1)
+        range_scan, index = range_filter(scan, min = msg.range_min, max = 1.2)
         not_none = []
 
         # Get not none values 
-        not_none = [range_scan[i] for i in index if range_scan[i] is not None]        
+        not_none = [range_scan[i] for i in index if range_scan[i] !=float('Inf')]        
         not_none = median_deviation(not_none,10)
 
         # Replace the old values of the scan with the filtered ones 
